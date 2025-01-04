@@ -19,12 +19,38 @@ class MovieDAO:
      If a user_id value is suppled, a `favorite` boolean property should be returned to
      signify whether the user has added the movie to their "My Favorites" list.
     """
+    
     # tag::all[]
     def all(self, sort, order, limit=6, skip=0, user_id=None):
         # TODO: Get list from movies from Neo4j
-        return popular
+        
+        # tag::get_movies[]
+        def get_movies(tx, sort, order, limit, skip, user_id):
+            cypher = """
+                match (m:Movie)
+                where m.'{0}' is not null
+                return m {{ .* }} as movie
+                order by m.'{0}' {1}
+                skip $skip
+                limit $limit
+            """.format(sort, order)
+
+            result = tx.run(cypher, limit=limit, skip=skip, user_id=user_id)
+
+            return [row.value("movie") for row in result]
+        # end::get_movies[]
+
+        with self.driver.session() as session:
+            return session.execute_read(get_movies, sort, order, limit, skip, user_id)
+
+        #return popular
     # end::all[]
 
+    
+    
+    
+    
+    
     """
     This method should return a paginated list of movies that have a relationship to the
     supplied Genre.
