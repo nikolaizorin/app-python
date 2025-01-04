@@ -30,9 +30,8 @@ class AuthDAO:
     def register(self, email, plain_password, name):
         encrypted = bcrypt.hashpw(plain_password.encode("utf8"), bcrypt.gensalt()).decode('utf8')
 
-        # TODO: Handle unique constraint error
         def create_user(tx, email, encrypted, name):
-            return tx.run("""
+            return tx.run(""" // (1)
                 CREATE (u:User {
                     userId: randomUuid(),
                     email: $email,
@@ -41,50 +40,29 @@ class AuthDAO:
                 })
                 RETURN u
             """,
-            email=email, encrypted=encrypted, name=name
-            ).single()
+            email=email, encrypted=encrypted, name=name # (2)
+            ).single() # (3)
 
+        try:
+            with self.driver.session() as session:
+                result = session.execute_write(create_user, email, encrypted, name)
 
-            try:
+                user = result['u']
 
-                with self.driver.session() as session:
-                    result = session.execute_write(create_user, email, encrypted, name)
+                payload = {
+                    "userId": user["userId"],
+                    "email":  user["email"],
+                    "name":  user["name"],
+                }
 
-                    user = result['u']
+                payload["token"] = self._generate_token(payload)
 
-                    payload = {
-                        "userId": user["userId"],
-                        "email": user["email"],
-                        "name": used["name"],
-                    }
-
-                    payload["token"] = self._generate_token(payload)
-
-                    return payload
-
-            except ConstraintError as err:
-                raise ValidationException(err.message, {"email": err.message})
-
-    """
-
-        if email != "graphacademy@neo4j.com":
-            raise ValidationException(
-                f"An account already exists with the email address {email}",
-                {"email": "An account already exists with this email"}
-            )
-
-        # Build a set of claims
-        payload = {
-            "userId": "00000000-0000-0000-0000-000000000000",
-            "email": email,
-            "name": name,
-        }
-
-        # Generate Token
-        payload["token"] = self._generate_token(payload)
-
-        return payload
-    """
+                return payload
+        except ConstraintError as err:
+            # Pass error details through to a ValidationException
+            raise ValidationException(err.message, {
+                "email": err.message
+            })
     # end::register[]
 
     """
