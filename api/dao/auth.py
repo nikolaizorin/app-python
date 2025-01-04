@@ -96,7 +96,7 @@ class AuthDAO:
             return user
 
         with self.driver.session() as session:
-            user = session.exexute_read(get_user, email=email)
+            user = session.execute_read(get_user, email=email)
 
         if user is None:
             return False
