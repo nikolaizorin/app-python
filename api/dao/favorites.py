@@ -24,7 +24,23 @@ class FavoriteDAO:
     def all(self, user_id, sort = 'title', order = 'ASC', limit = 6, skip = 0):
         # TODO: Open a new session
         # TODO: Retrieve a list of movies favorited by the user
-        return popular
+        with self.session.driver.session() as session:
+        
+            movies = session.execute_read(lambda tx: tx.run("""
+                match (u:User {{userId: $userId}})-[r:HAS_FAVORITE]->(m:Movie)
+                return m {{ .*, favorite: true}} as movie
+                order by m. '{0}' {1}
+                skip $skip
+                limit $limit
+            """.format (sort, order), userId=userId, limit=limit, skip=skip).value("movie") 
+            )
+
+        return movies
+
+
+
+       
+        #return popular
     # end::all[]
 
 
