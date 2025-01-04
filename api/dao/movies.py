@@ -44,11 +44,7 @@ class MovieDAO:
             return session.execute_read(get_movies, sort, order, limit, skip, user_id)
     # end::all[]
 
-    
-    
-    
-    
-    
+        
     """
     This method should return a paginated list of movies that have a relationship to the
     supplied Genre.
