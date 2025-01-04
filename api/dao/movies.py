@@ -38,10 +38,10 @@ class MovieDAO:
             result = tx.run(cypher, limit=limit, skip=skip, user_id=user_id)
 
             # Extract a list of Movies from the Result
-        return [row.value("movie") for row in result]
+            return [row.value("movie") for row in result]
 
-    with self.driver.session() as session:
-        return session.execute_read(get_movies, sort, order, limit, skip, user_id)
+        with self.driver.session() as session:
+            return session.execute_read(get_movies, sort, order, limit, skip, user_id)
     # end::all[]
 
     
