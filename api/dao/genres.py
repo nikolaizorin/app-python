@@ -36,6 +36,7 @@ class GenreDAO:
                     with g
                     match (g)<-[:IN_GENRE]-(m:Movie)
                     where m.imdbRating is not Null and m.poster is not Null
+                    return m.poster as poster
                     order by m.imdbRating desc limit 1
                 }    
 
