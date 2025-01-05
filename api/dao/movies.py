@@ -152,5 +152,13 @@ class MovieDAO:
     """
     # tag::getUserFavorites[]
     def get_user_favorites(self, tx, user_id):
-        return []
+        if user_id == None:
+            return []
+
+        result = tx.run("""
+            match (u:User {userId: $userId})-[:HAS_FAVORITE]->(m:Movie)
+            return m.tmdbId as id
+        """, userId=user_id)
+
+        return [record.get("id") for record in result]
     # end::getUserFavorites[]
