@@ -42,7 +42,7 @@ class GenreDAO:
 
                 return g { .*, movies: count{(g)<-[:in_GENRE]-(:Movie)}, poster: poster}
                 order by g.name desc
-                """).value("genres"))
+                """).value(0))
         # TODO: Execute within a Read Transaction
 
         return genres
