@@ -99,7 +99,7 @@ class FavoriteDAO:
         # TODO: Execute the transaction function within a Write Transaction
         # TODO: Return movie details and `favorite` property
 
-        def rem_from_fav(tx, user_id, movie_id):
+        def remove_from_favorites(tx, user_id, movie_id):
             row = tx.run("""
                match (u:User {userId: $UserId})-[r:HAS_FAVORITE]->(m:Movie {movieId: $movieId})
                delete r
@@ -112,7 +112,7 @@ class FavoriteDAO:
             return row.get("movie")
 
         with self.driver.session() as session:
-            return session.execute_write(rem_from_fav, user_id, movie_id)
+            return session.execute_write(remove_from_favorites, user_id, movie_id)
 
         """
         return {
