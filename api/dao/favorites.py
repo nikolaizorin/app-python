@@ -97,7 +97,7 @@ class FavoriteDAO:
 
         def remove_from_favorites(tx, user_id, movie_id):
             row = tx.run("""
-               match (u:User {userId: $UserId})-[r:HAS_FAVORITE]->(m:Movie {movieId: $movieId})
+               match (u:User {userId: $userId})-[r:HAS_FAVORITE]->(m:Movie {movieId: $movieId})
                delete r
                return m { .*, favorite: false} as movie
             """,userId=user_id, movieId=movie_id).single()
