@@ -26,26 +26,35 @@ class GenreDAO:
     # tag::all[]
     def all(self):
         # TODO: Open a new session
+        def get_movies(tx):
+            result = tx.run("""
+                MATCH (g:Genre)
+                WHERE g.name <> '(no genres listed)'
+                CALL {
+                    WITH g
+                    MATCH (g)<-[:IN_GENRE]-(m:Movie)
+                    WHERE m.imdbRating IS NOT NULL AND m.poster IS NOT NULL
+                    RETURN m.poster AS poster
+                    ORDER BY m.imdbRating DESC LIMIT 1
+                }
+                RETURN g {
+                    .*,
+                    movies: count { (g)<-[:IN_GENRE]-(:Movie) },
+                    poster: poster
+                } AS genre
+                ORDER BY g.name ASC
+            """)
+
+            return [ g.value(0) for g in result ]
+        
+        
+        
+        
         with self.driver.session() as session:
             
             # TODO: Define a unit of work to Get a list of Genres
-            genres = session.execute_read(lambda tx: tx.run("""
-                match (g:Genre) where g.name <> '(no genres listed)'
-
-                call {
-                    with g
-                    match (g)<-[:IN_GENRE]-(m:Movie)
-                    where m.imdbRating is not Null and m.poster is not Null
-                    return m.poster as poster
-                    order by m.imdbRating desc limit 1
-                }    
-
-                return g { .*, movies: count{(g)<-[:in_GENRE]-(:Movie)}, poster: poster}
-                order by g.name asc
-                """).value(0))
-        # TODO: Execute within a Read Transaction
-
-        return genres
+            
+            return session.execute_read(get_movies)
     # end::all[]
 
 
